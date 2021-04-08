@@ -26,12 +26,12 @@ function restricted(req, res, next) {
 */
 async function checkUsernameFree(req, res, next) {
   try {
-   let {username} = req.body; 
-  const user = await db('users').whereExists(db.select("*").from('users').where({username}))
-  if (user !== username) {
-    next();
-    } else {
+    const username = req.body.username;
+    const user = await db.select("username").from('users').where({username})
+    if (user.length >= 1) {
       res.status(422).json({message: "Username taken"})
+    } else {
+      next();
     }
   } catch (err) {
     next(err)
@@ -48,9 +48,10 @@ async function checkUsernameFree(req, res, next) {
 */
 async function checkUsernameExists(req, res, next) {
 try {
-  let {username} = req.body;
-  const user = await db('users').whereNotExists(db('users').where({username}))
-  if (user === username) {
+  const username = req.body.username;
+  const user = await db.select("username").from('users').where({username})
+  console.log(user);
+  if (user.length === 0) {
     res.status(401).json({message: "Invalid credentials"})
   } else {
     next();
